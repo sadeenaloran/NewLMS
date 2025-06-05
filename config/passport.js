@@ -1,5 +1,5 @@
 import passport from "passport";
-import UserModel from "../models/userModel.js";
+import UserModel, { createUser } from "../models/userModel.js";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import dotenv from "dotenv";
 
@@ -15,10 +15,23 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        // Log the profile for debugging
+        console.log("Google profile:", profile);
+
+        // Safely extract email and name
         const oauthId = profile.id;
-        const email = profile.emails[0].value;
+        const email =
+          profile.emails && profile.emails.length > 0
+            ? profile.emails[0].value
+            : null;
         const name = profile.displayName;
-        const avatar = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
+        const avatar =
+          profile.photos && profile.photos[0] ? profile.photos[0].value : null;
+
+        // Check for required fields
+        if (!email || !name) {
+          return done(new Error("Missing required fields from Google profile"));
+        }
 
         // Try to find user by OAuth ID
         let user = await UserModel.findUserByGoogleId(oauthId);
@@ -36,18 +49,17 @@ passport.use(
             });
           } else {
             // Create new user with Google info
-            user = await UserModel.create({
+            user = await createUser({
+              oauth_id: oauthId,
               email,
               name,
-              oauth_provider: "google",
-              oauth_id: oauthId,
               avatar,
+              oauth_provider: "google",
               password: null,
-              role: "student", // or your default role
+              role: "student",
             });
           }
         }
-
         return done(null, user);
       } catch (error) {
         return done(error, null);
