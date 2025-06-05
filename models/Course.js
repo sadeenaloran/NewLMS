@@ -1,4 +1,4 @@
-import { query } from "../config/db.js";
+import { pool } from "../config/db.js";
 
 const CourseModel = {
   async update(id, updates) {
@@ -11,14 +11,14 @@ const CourseModel = {
       duration,
     } = updates;
 
-    const { rows } = await query(
+    const { rows } = await pool.query(
       `UPDATE courses 
        SET title = COALESCE($1, title),
            description = COALESCE($2, description),
            category_id = COALESCE($3, category_id),
            thumbnail_url = COALESCE($4, thumbnail_url),
            is_published = COALESCE($5, is_published),
-           duration  = COALESCE($6, duration ),
+           duration = COALESCE($6, duration),
            updated_at = NOW()
        WHERE id = $7
        RETURNING *`,
@@ -34,6 +34,7 @@ const CourseModel = {
     );
     return rows[0];
   },
+
   async create({
     title,
     description,
@@ -42,9 +43,9 @@ const CourseModel = {
     thumbnail_url = null,
     duration,
   }) {
-    const { rows } = await query(
+    const { rows } = await pool.query(
       `INSERT INTO courses 
-       (title, description, instructor_id, category_id, thumbnail_url,duration ) 
+       (title, description, instructor_id, category_id, thumbnail_url, duration) 
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
       [title, description, instructor_id, category_id, thumbnail_url, duration]
@@ -53,7 +54,7 @@ const CourseModel = {
   },
 
   async findById(id) {
-    const { rows } = await query(
+    const { rows } = await pool.query(
       `SELECT c.*, u.name as instructor_name 
        FROM courses c
        JOIN users u ON c.instructor_id = u.id
@@ -64,7 +65,7 @@ const CourseModel = {
   },
 
   async findAll() {
-    const { rows } = await query(
+    const { rows } = await pool.query(
       `SELECT c.*, u.name as instructor_name 
        FROM courses c
        JOIN users u ON c.instructor_id = u.id`
@@ -73,12 +74,12 @@ const CourseModel = {
   },
 
   async delete(id) {
-    await query("DELETE FROM courses WHERE id = $1", [id]);
+    await pool.query("DELETE FROM courses WHERE id = $1", [id]);
     return true;
   },
 
   async findByInstructor(instructorId) {
-    const { rows } = await query(
+    const { rows } = await pool.query(
       "SELECT * FROM courses WHERE instructor_id = $1",
       [instructorId]
     );
@@ -86,12 +87,12 @@ const CourseModel = {
   },
 
   async approveCourse(id) {
-    const { rows } = await query(
+    const { rows } = await pool.query(
       `UPDATE courses 
-         SET is_approved = true, 
-         is_published = true, 
-         updated_at = NOW() 
-     WHERE id = $1 RETURNING *`,
+       SET is_approved = true, 
+           is_published = true, 
+           updated_at = NOW() 
+       WHERE id = $1 RETURNING *`,
       [id]
     );
     return rows[0];
