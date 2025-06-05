@@ -1,8 +1,8 @@
-import { query } from "../config/db.js";
+import { pool } from "../config/db.js";
 
 const CategoryModel = {
   async create(name) {
-    const { rows } = await query(
+    const { rows } = await pool.query(
       "INSERT INTO categories (name) VALUES ($1) RETURNING *",
       [name]
     );
@@ -10,14 +10,15 @@ const CategoryModel = {
   },
 
   async findAll() {
-    const { rows } = await query("SELECT * FROM categories");
+    const { rows } = await pool.query("SELECT * FROM categories");
     return rows;
   },
 
   async findById(id) {
-    const { rows } = await query("SELECT * FROM categories WHERE id = $1", [
-      id,
-    ]);
+    const { rows } = await pool.query(
+      "SELECT * FROM categories WHERE id = $1",
+      [id]
+    );
     return rows[0];
   },
 };
