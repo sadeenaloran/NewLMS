@@ -10,6 +10,7 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoute from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import "./config/db.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import moduleRoutes from "./routes/moduleRoutes.js";
 import lessonsRoutes from "./routes/lessonRoutes.js";
@@ -72,6 +73,7 @@ app.use(passport.session());
 
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
 //for courses and categories and modules
 app.use("/api/courses", courseRoutes);
 app.use("/api/categories", categoryRoutes);
