@@ -13,16 +13,23 @@ router.use(authenticate);
 
 // Instructor routes
 router.post("/", authorize(["instructor"]), CourseController.createCourse);
-
 router.put("/:id", authorize(["instructor"]), CourseController.updateCourse);
 
 // Admin-only routes
-router.delete("/:id", authorize(["admin"]), CourseController.deleteCourse);
-
+router.delete(
+  "/:id",
+  authorize(["admin", "instructor"]),
+  CourseController.deleteCourse
+);
 router.patch(
   "/:id/approve",
   authorize(["admin"]),
   CourseController.approveCourse
+);
+router.patch(
+  "/:id/reject",
+  authorize(["admin"]),
+  CourseController.rejectCourse
 );
 
 export default router;
