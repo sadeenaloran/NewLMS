@@ -27,7 +27,8 @@ const CourseController = {
 
   async getAllCourses(req, res, next) {
     try {
-      const courses = await CourseModel.findAll();
+      const { status } = req.query;
+      const courses = await CourseModel.findAll(status);
       res.json({ success: true, data: courses });
     } catch (error) {
       next(error);
@@ -78,8 +79,13 @@ const CourseController = {
         category_id: req.body.category_id,
         thumbnail_url: req.body.thumbnail_url,
         duration: req.body.duration,
-        is_published: req.body.is_published,
       };
+
+      // Only admin can update status
+      if (req.user.role === "admin" && req.body.status) {
+        updates.status = req.body.status;
+        updates.feedback = req.body.feedback;
+      }
 
       const updatedCourse = await CourseModel.update(req.params.id, updates);
       res.json({ success: true, course: updatedCourse });
@@ -102,7 +108,24 @@ const CourseController = {
 
   async approveCourse(req, res, next) {
     try {
-      const course = await CourseModel.approveCourse(req.params.id);
+      const course = await CourseModel.updateStatus(
+        req.params.id,
+        "approved",
+        req.body.feedback
+      );
+      res.json({ success: true, course });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async rejectCourse(req, res, next) {
+    try {
+      const course = await CourseModel.updateStatus(
+        req.params.id,
+        "rejected",
+        req.body.feedback
+      );
       res.json({ success: true, course });
     } catch (error) {
       next(error);
