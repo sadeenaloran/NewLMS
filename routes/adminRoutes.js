@@ -13,12 +13,8 @@ router.delete("/users/:userId", isAdmin, AdminController.deleteUser);
 
 // Course Management
 router.get("/courses/pending", isAdmin, AdminController.getPendingCourses);
-router.put(
-  "/courses/:courseId/approve",
-  isAdmin,
-  AdminController.approveCourse
-);
-router.put("/courses/:courseId/reject", isAdmin, AdminController.rejectCourse);
+router.patch("/courses/:courseId/approve",isAdmin, AdminController.approveCourse);
+router.patch("/courses/:courseId/reject", isAdmin, AdminController.rejectCourse);
 
 // Admin Dashboard
 router.get("/admin/dashboard", authenticateJWT, isAdmin, (req, res) => {
@@ -26,3 +22,4 @@ router.get("/admin/dashboard", authenticateJWT, isAdmin, (req, res) => {
 });
 
 export default router;
+

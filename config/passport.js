@@ -21,7 +21,7 @@ passport.use(
         const avatar = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
 
         // Try to find user by OAuth ID
-        let user = await UserModel.findUserByGoogleId(oauthId);
+        let user = await UserModel.findByGoogleId(oauthId);
 
         if (!user) {
           // Try to find user by email
