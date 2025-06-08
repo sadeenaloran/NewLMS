@@ -97,6 +97,18 @@ const CourseModel = {
     );
     return rows[0];
   },
+    async updateStatus(id, status, feedback = null) {
+    const { rows } = await pool.query(
+      `UPDATE courses
+       SET status = $2,
+           feedback = $3,
+           updated_at = NOW()
+       WHERE id = $1
+       RETURNING *`,
+      [id, status, feedback]
+    );
+    return rows[0];
+  },
 };
 
 export default CourseModel;
