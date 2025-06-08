@@ -124,11 +124,11 @@ const UserModel = {
     }
   },
 
-  // Delete user (hard delete)
+  // Delete user (Soft delete)
   async delete(id) {
     try {
       const { rows } = await pool.query(
-        "DELETE FROM users WHERE id = $1 RETURNING *",
+      `UPDATE users SET is_active = false, deleted_at = NOW() WHERE id = $1`,
         [id]
       );
       return rows[0];

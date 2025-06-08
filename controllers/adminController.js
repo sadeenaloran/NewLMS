@@ -16,7 +16,7 @@ const AdminController = {
         success: false,
         error: "Invalid role. Must be 'instructor' or 'student'"
       });
-    }
+    } 
 
     const existingUser = await UserModel.findByEmail(email);
     if (existingUser) {
@@ -48,7 +48,7 @@ const AdminController = {
 async updateUser(req, res, next) {
   try {
     const { userId } = req.params;
-    const { name, email, role , is_active } = req.body;
+    const { name, email, role, is_active } = req.body;
 
     if (role && req.user.role !== 'admin') {
       return res.status(403).json({
@@ -93,25 +93,14 @@ async updateUser(req, res, next) {
       name: name || user.name,
       email: email || user.email,
       role: (req.user.role === 'admin') ? (role || user.role) : user.role,
-
       is_active: is_active !== undefined ? is_active : user.is_active
     };
 
-    const updatedUser = await query(
-      `UPDATE users 
-       SET name = $1, email = $2, role = $3, is_active = $4
-       WHERE id = $5 RETURNING *`,
-      [
-        updateData.name,
-        updateData.email,
-        updateData.role,
-        updateData.is_active,
-        userId
-      ]
-    );
+    const updatedUser = await UserModel.update(userId, updateData);
+
     res.json({
       success: true,
-      user: updatedUser.rows[0]
+      user: updatedUser
     });
 
   } catch (error) {
@@ -141,13 +130,7 @@ async deleteUser(req, res, next) {
       });
     }
 
-    await query(
-      `UPDATE users SET is_active = false, deleted_at = NOW() WHERE id = $1`,
-      [userId]
-    );
-
-    // await query(`DELETE FROM users WHERE id = $1`, [userId]);
-
+    await UserModel.delete(userId);
     res.json({
       success: true,
       message: "User deleted successfully"
