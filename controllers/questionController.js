@@ -4,7 +4,7 @@ import { authenticateJWT, authorize } from "../middleware/authMiddleware.js";
 import {
   questionCreateSchema,
   questionUpdateSchema,
-} from "../validators/questionValidator.js";
+} from "../utils/questionValidator.js";
 
 export default {
   // Create new question
