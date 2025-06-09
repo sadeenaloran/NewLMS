@@ -18,7 +18,8 @@ passport.use(
         const oauthId = profile.id;
         const email = profile.emails[0].value;
         const name = profile.displayName;
-        const avatar = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
+        const avatar =
+          profile.photos && profile.photos[0] ? profile.photos[0].value : null;
 
         // Try to find user by OAuth ID
         let user = await UserModel.findByGoogleId(oauthId);
@@ -47,6 +48,8 @@ passport.use(
             });
           }
         }
+        // Update last login timestamp
+        await UserModel.updateLastLogin(user.id);
 
         return done(null, user);
       } catch (error) {
