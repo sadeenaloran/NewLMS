@@ -5,7 +5,7 @@ import {
   quizCreateSchema,
   quizUpdateSchema,
   quizSubmissionSchema,
-} from "../validators/quizValidator.js";
+} from "../utils/quizValidator.js";
 
 export default {
   // Quiz CRUD operations

@@ -36,3 +36,12 @@ export const quizIdSchema = Joi.object({
 export const lessonIdSchema = Joi.object({
   lesson_id: Joi.number().integer().min(1).required(),
 }).messages(quizMessages);
+// Add this to quizValidator.js (before the exports)
+export const quizSubmissionSchema = Joi.object({
+  answers: Joi.object()
+    .pattern(
+      Joi.number().integer().min(1), // Question IDs as numbers
+      Joi.string().min(1).max(500) // Answers as strings
+    )
+    .required(),
+}).messages(quizMessages);
