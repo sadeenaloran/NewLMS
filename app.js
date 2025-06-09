@@ -17,7 +17,11 @@ import lessonsRoutes from "./routes/lessonRoutes.js";
 import AssignmentRoutes from "./routes/assignmentRoutes.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
 // -----------------enrollment --------------------
-import enrollmentRoutes from './routes/enrollmentRoutes.js';
+import enrollmentRoutes from "./routes/enrollmentRoutes.js";
+// -----------------quizzes --------------------
+import questionRoutes from "./routes/questionRoutes.js";
+import quizRoutes from "./routes/quizRoutes.js";
+
 dotenv.config();
 
 // Import configurations
@@ -83,10 +87,11 @@ app.use("/api/courses", moduleRoutes);
 app.use("/api/lessons", lessonsRoutes);
 app.use("/api/assignments", AssignmentRoutes);
 app.use("/api/submissions", submissionRoutes);
-
 //for enrollment
-app.use('/api/enrollments', enrollmentRoutes);
-
+app.use("/api/enrollments", enrollmentRoutes);
+// for quizzes and questions
+app.use("/api/quizzes", quizRoutes);
+app.use("/api/questions", questionRoutes);
 
 app.get("/health", (req, res) => {
   res.json(
