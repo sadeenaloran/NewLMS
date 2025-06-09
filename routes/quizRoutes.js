@@ -4,7 +4,7 @@ import { authenticateJWT, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// إنشاء اختبار جديد (للمعلمين والمشرفين)
+// Quiz CRUD operations
 router.post(
   "/",
   authenticateJWT,
@@ -12,10 +12,8 @@ router.post(
   quizController.createQuiz
 );
 
-// الحصول على تفاصيل اختبار
 router.get("/:id", authenticateJWT, quizController.getQuiz);
 
-// تحديث اختبار (للمعلمين والمشرفين)
 router.put(
   "/:id",
   authenticateJWT,
@@ -23,7 +21,6 @@ router.put(
   quizController.updateQuiz
 );
 
-// حذف اختبار (للمعلمين والمشرفين)
 router.delete(
   "/:id",
   authenticateJWT,
@@ -31,11 +28,38 @@ router.delete(
   quizController.deleteQuiz
 );
 
-// الحصول على جميع اختبارات درس معين
 router.get(
   "/lesson/:lesson_id",
   authenticateJWT,
   quizController.getQuizzesByLesson
+);
+
+// Quiz Submission endpoints
+router.post(
+  "/:id/submit",
+  authenticateJWT,
+  authorize(["student"]),
+  quizController.submitQuiz
+);
+
+router.get(
+  "/:id/submissions",
+  authenticateJWT,
+  authorize(["instructor", "admin"]),
+  quizController.getQuizSubmissions
+);
+
+router.get(
+  "/:id/submissions/:submission_id",
+  authenticateJWT,
+  quizController.getQuizSubmission
+);
+
+router.get(
+  "/:id/my-submission",
+  authenticateJWT,
+  authorize(["student"]),
+  quizController.getMyQuizSubmission
 );
 
 export default router;
