@@ -298,22 +298,15 @@ const AuthController = {
           .json({ success: false, message: "User not found" });
       }
 
-      // Add this check:
       if (!user.password_hash) {
         return res
           .status(400)
           .json({ success: false, message: "No password set for this account" });
       }
 
-      const isMatch = await UserModel.verifyPassword(
-        currentPassword,
-        user.password_hash
-      );
-
+      const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
       if (!isMatch) {
-        return res
-          .status(401)
-          .json({ success: false, message: "Current password is incorrect" });
+        return res.status(400).json({ success: false, message: "Invalid password" });
       }
 
       await UserModel.updatePassword(userId, newPassword);
