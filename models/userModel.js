@@ -140,14 +140,12 @@ const UserModel = {
   },
 
   // Get all users (admin function)
-  async getAll(limit = 50, offset = 0) {
+  async getAll() {
     try {
       const { rows } = await pool.query(
-        `SELECT id, email, name, avatar, oauth_provider, is_verified, created_at, updated_at
+        `SELECT id, email, name, avatar, role, oauth_provider, is_active, created_at, updated_at, last_login, deleted_at
          FROM users
-         ORDER BY created_at DESC
-         LIMIT $1 OFFSET $2`,
-        [limit, offset]
+         ORDER BY created_at DESC`
       );
       return rows;
     } catch (error) {

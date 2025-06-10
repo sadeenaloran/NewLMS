@@ -60,3 +60,28 @@ export const changePasswordSchema = Joi.object({
       "string.empty": "Please confirm your new password",
     }),
 }).with("newPassword", "confirmPassword");
+
+export const addUserSchema = Joi.object({
+  name: Joi.string().min(3).max(255).required().messages({
+    "string.min": "Name must be at least {#limit} characters long",
+    "string.max": "Name cannot exceed {#limit} characters",
+    "string.empty": "Name is required",
+  }),
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email address",
+    "string.empty": "Email is required",
+  }),
+  password: Joi.string()
+    .min(8)
+    .pattern(
+      new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})")
+    )
+    .message(
+      "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character."
+    )
+    .required(),
+      role: Joi.string().valid("student", "instructor").required().messages({
+    "any.only": "Role must be one of student, instructor",
+    "string.empty": "Role is required",
+  }),
+});
