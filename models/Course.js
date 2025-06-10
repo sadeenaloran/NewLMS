@@ -1,40 +1,6 @@
 import { pool } from "../config/db.js";
 
 const CourseModel = {
-  async update(id, updates) {
-    const {
-      title,
-      description,
-      category_id,
-      thumbnail_url,
-      is_published,
-      duration,
-    } = updates;
-
-    const { rows } = await pool.query(
-      `UPDATE courses 
-       SET title = COALESCE($1, title),
-           description = COALESCE($2, description),
-           category_id = COALESCE($3, category_id),
-           thumbnail_url = COALESCE($4, thumbnail_url),
-           is_published = COALESCE($5, is_published),
-           duration = COALESCE($6, duration),
-           updated_at = NOW()
-       WHERE id = $7
-       RETURNING *`,
-      [
-        title,
-        description,
-        category_id,
-        thumbnail_url,
-        is_published,
-        duration,
-        id,
-      ]
-    );
-    return rows[0];
-  },
-
   async create({
     title,
     description,
@@ -73,11 +39,6 @@ const CourseModel = {
     return rows;
   },
 
-  async delete(id) {
-    await pool.query("DELETE FROM courses WHERE id = $1", [id]);
-    return true;
-  },
-
   async findByInstructor(instructorId) {
     const { rows } = await pool.query(
       "SELECT * FROM courses WHERE instructor_id = $1",
@@ -86,18 +47,49 @@ const CourseModel = {
     return rows;
   },
 
-  async approveCourse(id) {
+  async update(id, updates) {
+    const {
+      title,
+      description,
+      category_id,
+      thumbnail_url,
+      duration,
+      status,
+      feedback,
+    } = updates;
+
     const { rows } = await pool.query(
       `UPDATE courses 
-       SET is_approved = true, 
-           is_published = true, 
-           updated_at = NOW() 
-       WHERE id = $1 RETURNING *`,
-      [id]
+       SET title = COALESCE($1, title),
+           description = COALESCE($2, description),
+           category_id = COALESCE($3, category_id),
+           thumbnail_url = COALESCE($4, thumbnail_url),
+           duration = COALESCE($5, duration),
+           status = COALESCE($6, status),
+           feedback = COALESCE($7, feedback),
+           updated_at = NOW()
+       WHERE id = $8
+       RETURNING *`,
+      [
+        title,
+        description,
+        category_id,
+        thumbnail_url,
+        duration,
+        status,
+        feedback,
+        id,
+      ]
     );
     return rows[0];
   },
-    async updateStatus(id, status, feedback = null) {
+
+  async delete(id) {
+    await pool.query("DELETE FROM courses WHERE id = $1", [id]);
+    return true;
+  },
+
+  async updateStatus(id, status, feedback = null) {
     const { rows } = await pool.query(
       `UPDATE courses
        SET status = $2,
