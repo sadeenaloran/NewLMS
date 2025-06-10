@@ -1,4 +1,4 @@
-import pool from "../config/db.js";
+import { pool } from "../config/db.js";
 //this is the module
 const ModuleModel = {
   async create({ course_id, title, description, order, duration }) {
