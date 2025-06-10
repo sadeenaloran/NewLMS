@@ -16,10 +16,7 @@ const CourseController = {
         duration,
       });
 
-      res.status(201).json({
-        success: true,
-        course,
-      });
+      res.status(201).json({ success: true, course });
     } catch (error) {
       next(error);
     }
@@ -27,8 +24,23 @@ const CourseController = {
 
   async getAllCourses(req, res, next) {
     try {
-      const { status } = req.query;
-      const courses = await CourseModel.findAll(status);
+      let courses;
+
+      if (!req.user) {
+        // Public users (not logged in) only see approved coursess
+        courses = await CourseModel.findByStatus("approved");
+      } else if (req.user.role === "student") {
+        // Students see only approved courses
+        courses = await CourseModel.findByStatus("approved");
+      } else if (req.user.role === "admin" || req.user.role === "instructor") {
+        // Admins and instructors see all courses
+        courses = await CourseModel.findAll();
+      } else {
+        return res
+          .status(403)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
       res.json({ success: true, data: courses });
     } catch (error) {
       next(error);
@@ -39,17 +51,13 @@ const CourseController = {
     try {
       const course = await CourseModel.findById(req.params.id);
       if (!course) {
-        return res.status(404).json({
-          success: false,
-          message: "Course not found",
-        });
+        return res
+          .status(404)
+          .json({ success: false, message: "Course not found" });
       }
 
       const modules = await ModuleModel.findByCourseId(req.params.id);
-      res.json({
-        success: true,
-        data: { ...course, modules },
-      });
+      res.json({ success: true, data: { ...course, modules } });
     } catch (error) {
       next(error);
     }
@@ -59,13 +67,11 @@ const CourseController = {
     try {
       const course = await CourseModel.findById(req.params.id);
       if (!course) {
-        return res.status(404).json({
-          success: false,
-          message: "Course not found",
-        });
+        return res
+          .status(404)
+          .json({ success: false, message: "Course not found" });
       }
 
-      // Authorization check
       if (req.user.role !== "admin" && course.instructor_id !== req.user.id) {
         return res.status(403).json({
           success: false,
@@ -81,7 +87,6 @@ const CourseController = {
         duration: req.body.duration,
       };
 
-      // Only admin can update status
       if (req.user.role === "admin" && req.body.status) {
         updates.status = req.body.status;
         updates.feedback = req.body.feedback;
@@ -97,10 +102,7 @@ const CourseController = {
   async deleteCourse(req, res, next) {
     try {
       await CourseModel.delete(req.params.id);
-      res.json({
-        success: true,
-        message: "Course deleted successfully",
-      });
+      res.json({ success: true, message: "Course deleted successfully" });
     } catch (error) {
       next(error);
     }

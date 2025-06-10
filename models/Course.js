@@ -57,6 +57,21 @@ const CourseModel = {
       throw error;
     }
   },
+  //find by status
+  async findByStatus(status) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT c.*, u.name as instructor_name 
+         FROM courses c
+         JOIN users u ON c.instructor_id = u.id
+         WHERE c.status = $1`,
+        [status]
+      );
+      return rows;
+    } catch (error) {
+      throw error;
+    }
+  },
 
   async findByInstructor(instructorId) {
     try {
