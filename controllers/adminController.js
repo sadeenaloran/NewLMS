@@ -200,7 +200,7 @@ const AdminController = {
         return res.status(404).json({ success: false, error: "User not found" });
       }
       // Only admin can access
-      if (req.user.role !== isAdmin) {
+      if (req.user.role !== "admin") {
         return res.status(403).json({ success: false, error: "Access denied: only admins can perform this action" });
       }
       res.json({ success: true, user });
@@ -221,7 +221,7 @@ const AdminController = {
         return res.status(404).json({ success: false, error: "User not found" });
       }
       // Only admin can access
-      if (req.user.role !== isAdmin) {
+      if (req.user.role !== "admin") {
         return res.status(403).json({ success: false, error: "Access denied: only admins can perform this action" });
       }
       res.json({ success: true, user });
@@ -233,7 +233,7 @@ const AdminController = {
   // Get all users - only admin can get all users (including admins)
   async getAllUsers(req, res, next) {
     try {
-      if (req.user.role !== isAdmin) {
+      if (req.user.role !== "admin") {
         return res.status(403).json({ success: false, error: "Access denied: only admins can perform this action" });
       }
       const users = await UserModel.getAll();
