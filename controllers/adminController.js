@@ -121,7 +121,7 @@ const AdminController = {
             error: error.details[0].message
           });
         }
-
+// Changed Password
         if (!user.password) {
           // No password set, allow setting new password without current password check
           updateData.password = await bcrypt.hash(newPassword, 12);
