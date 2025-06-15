@@ -32,7 +32,7 @@ router.patch(
 );
 
 // Admin Dashboard
-router.get("/admin/dashboard", authenticateJWT, isAdmin, (req, res) => {
+router.get("/dashboard", authenticateJWT, isAdmin, (req, res) => {
   res.json({ message: "Welcome, admin!" });
 });
 
