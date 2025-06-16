@@ -8,6 +8,8 @@ import {
   isInstructor,
   isStudent,
 } from "../middleware/roleMiddleware.js";
+import ExcelJS from "exceljs";
+
 const AdminController = {
   async addUser(req, res, next) {
     try {
@@ -331,6 +333,93 @@ const AdminController = {
       res.json({ success: true, courses });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
+    }
+  },
+  // System performance report (mock)
+  async getSystemPerformanceReport(req, res) {
+    try {
+      const data = {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May"],
+        responseTimes: [120, 190, 150, 200, 180],
+        uptimePercentages: [99.8, 99.5, 99.9, 99.7, 99.8],
+      };
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching system performance report:", error);
+      res.status(500).json({
+        message: "Failed to fetch system performance data",
+      });
+    }
+  },
+
+  // User activity report (real data)
+  async getUserActivityReport(req, res) {
+    try {
+      const { timeRange } = req.query;
+      const report = await UserModel.getActivityReport(timeRange || "monthly");
+      res.json(report);
+    } catch (error) {
+      console.error("Error fetching user activity report:", error);
+      res.status(500).json({ message: "Failed to fetch user activity data" });
+    }
+  },
+
+  // Course popularity report (real data)
+  async getCoursePopularityReport(req, res) {
+    try {
+      const data = await CourseModel.getPopularityReport();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching course popularity report:", error);
+      res.status(500).json({
+        message: "Failed to fetch course popularity data",
+      });
+    }
+  },
+
+  /**
+   * Export report data
+   */
+  async exportReport(req, res) {
+    try {
+      const { reportType } = req.query;
+
+      // Example data, replace with your real report data
+      const data = [
+        { label: "Course A", enrollments: 120 },
+        { label: "Course B", enrollments: 90 },
+        { label: "Course C", enrollments: 150 },
+      ];
+
+      // Create workbook and worksheet
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Report");
+
+      // Add header row
+      worksheet.columns = [
+        { header: "Course", key: "label", width: 30 },
+        { header: "Enrollments", key: "enrollments", width: 15 },
+      ];
+
+      // Add data rows
+      data.forEach((row) => worksheet.addRow(row));
+
+      // Set response headers for Excel
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${reportType}_report.xlsx`
+      );
+
+      // Write workbook to response
+      await workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      console.error("Error exporting Excel report:", error);
+      res.status(500).json({ message: "Failed to export report" });
     }
   },
 };
