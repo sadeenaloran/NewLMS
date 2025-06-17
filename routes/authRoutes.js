@@ -3,8 +3,8 @@ import AuthController, { googleAuth,
   refreshToken,
 } from "../controllers/authController.js";
 import { generateToken } from "../utils/jwt.js";  
-import { authenticate } from "../middleware/authMiddleware.js";
-import { authenticateJWT } from "../middleware/authMiddleware.js";
+import { authenticate } from "../middlewares/authMiddleware.js";
+import { authenticateJWT } from "../middlewares/authMiddleware.js";
 import UserModel from "../models/userModel.js";
 import passport from "passport"; 
 

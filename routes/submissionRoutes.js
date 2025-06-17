@@ -1,6 +1,6 @@
 import { Router } from "express";
 import SubmissionController from "../controllers/submissionController.js";
-import { authenticate, authorize } from "../middleware/authMiddleware.js";
+import { authenticate, authorize } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 

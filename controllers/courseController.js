@@ -1,9 +1,17 @@
 import CourseModel from "../models/Course.js";
 import ModuleModel from "../models/Module.js";
+import { courseSchema, courseUpdateSchema } from "../utils/courseValidation.js";
 
 const CourseController = {
   async createCourse(req, res, next) {
     try {
+      const { error, value } = courseSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.details[0].message,
+        });
+      }
       const { title, description, category_id, duration } = req.body;
 
       // استخدام صورة افتراضية مؤقتًا
@@ -14,7 +22,7 @@ const CourseController = {
         description,
         instructor_id: req.user.id,
         category_id,
-        thumbnail_url, // الصورة الافتراضية
+        thumbnail_url,
         duration,
         status: "pending",
       });
@@ -32,6 +40,20 @@ const CourseController = {
         return res
           .status(404)
           .json({ success: false, message: "Course not found" });
+      }
+      if (req.user.role !== "admin" && course.instructor_id !== req.user.id) {
+        return res.status(403).json({
+          success: false,
+          message: "Unauthorized: You can only edit your own courses",
+        });
+      }
+
+      const { error, value } = courseUpdateSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.details[0].message,
+        });
       }
 
       const updates = {

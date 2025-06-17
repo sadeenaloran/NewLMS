@@ -1,7 +1,7 @@
 import express from "express";
 import AdminController from "../controllers/adminController.js";
-import { isAdmin } from "../middleware/roleMiddleware.js";
-import { authenticateJWT } from "../middleware/authMiddleware.js";
+import { isAdmin } from "../middlewares/roleMiddleware.js";
+import { authenticateJWT } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 router.use(authenticateJWT); // <-- Use this for JWT-protected routes

@@ -1,6 +1,6 @@
 import Question from "../models/Question.js";
 import { createResponse } from "../utils/helpers.js";
-import { authenticateJWT, authorize } from "../middleware/authMiddleware.js";
+import { authenticateJWT, authorize } from "../middlewares/authMiddleware.js";
 import {
   questionCreateSchema,
   questionUpdateSchema,

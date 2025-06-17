@@ -3,10 +3,23 @@ import LessonModel from "../models/Lesson.js";
 import ModuleModel from "../models/Module.js";
 import CourseModel from "../models/Course.js";
 import { getCourseFromAssignment } from "../utils/helpers.js";
+import {
+  assignmentCreateSchema,
+  assignmentUpdateSchema,
+} from "../utils/assignmentValidation.js";
+
 const AssignmentController = {
   async createAssignment(req, res, next) {
     try {
-      const { lesson_id, title, description, max_score } = req.body;
+      const { error, value } = assignmentCreateSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: error.details.map((err) => err.message),
+        });
+      }
+      const { lesson_id, title, description, max_score } = value;
 
       // Verify lesson exists and get course info
       const lesson = await LessonModel.findById(lesson_id);
@@ -79,6 +92,14 @@ const AssignmentController = {
 
   async updateAssignment(req, res, next) {
     try {
+      const { error, value } = assignmentUpdateSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: error.details.map((err) => err.message),
+        });
+      }
       const assignment = await AssignmentModel.findById(req.params.id);
       if (!assignment) {
         return res.status(404).json({

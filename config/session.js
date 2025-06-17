@@ -8,13 +8,13 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: process.env.NODE_ENV === 'production', 
-    httpOnly: true, 
-    maxAge: 24 * 60 * 60 * 1000, 
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    httpOnly: true, // Prevent XSS attacks
+    maxAge: 24 * 60 * 60 * 1000, //24 hours
     sameSite: 'lax' 
   },
-  name: 'sessionId', 
-  rolling: true 
+  name: 'sessionId', // Change default session name
+  rolling: true // Reset expiration on activity
 };
 
 export default sessionConfig;

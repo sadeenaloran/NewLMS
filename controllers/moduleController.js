@@ -1,9 +1,22 @@
 import ModuleModel from "../models/Module.js";
 import CourseModel from "../models/Course.js";
+import {
+  createModuleSchema,
+  updateModuleSchema,
+} from "../utils/moduleValidation.js";
+
 const ModuleController = {
   async createModule(req, res, next) {
     try {
-      const { course_id, title, description, order, duration } = req.body;
+      const { error, value } = createModuleSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.details[0].message,
+        });
+      }
+
+      const { course_id, title, description, order, duration } = value;
 
       // Verify the course exists and belongs to the instructor
       const course = await CourseModel.findById(course_id);
@@ -52,7 +65,15 @@ const ModuleController = {
 
   async updateModule(req, res, next) {
     try {
-      const { title, description, order, duration } = req.body;
+      const { error, value } = updateModuleSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.details[0].message,
+        });
+      }
+
+      const { title, description, order, duration } = value;
       const moduleId = req.params.id;
 
       // Verify module exists and belongs to the instructor's course

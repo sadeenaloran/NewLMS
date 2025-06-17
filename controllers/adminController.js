@@ -1,13 +1,8 @@
-import { query } from "../config/db.js";
 import CourseModel from "../models/Course.js";
 import bcrypt from "bcryptjs";
 import UserModel from "../models/userModel.js";
-import { addUserSchema, changePasswordSchema } from "../utils/validation.js";
-import {
-  isAdmin,
-  isInstructor,
-  isStudent,
-} from "../middleware/roleMiddleware.js";
+import { addUserSchema, changePasswordSchema } from "../utils/userValidation.js";
+
 import ExcelJS from "exceljs";
 
 const AdminController = {

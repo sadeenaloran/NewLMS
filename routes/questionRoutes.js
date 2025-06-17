@@ -1,6 +1,6 @@
 import express from "express";
 import questionController from "../controllers/questionController.js";
-import { authenticateJWT, authorize } from "../middleware/authMiddleware.js";
+import { authenticateJWT, authorize } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
