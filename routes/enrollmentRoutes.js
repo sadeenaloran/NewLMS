@@ -11,9 +11,9 @@ router.use(authenticate);
 
 // Basic enrollment routes
 router.post('/', authorize('student'), enrollmentController.enrollUser);
-router.get('/:id', enrollmentController.getEnrollment);
 router.get('/user/me', enrollmentController.getUserEnrollments);
 router.get('/:id/progress', enrollmentController.getCourseProgressDetails);
+router.get('/:id', enrollmentController.getEnrollment);
 
 // Progress tracking routes
 router.post('/complete-lesson', authorize('student'), enrollmentController.markLessonCompleted);

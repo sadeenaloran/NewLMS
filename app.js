@@ -16,12 +16,10 @@ import moduleRoutes from "./routes/moduleRoutes.js";
 import lessonsRoutes from "./routes/lessonRoutes.js";
 import AssignmentRoutes from "./routes/assignmentRoutes.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
-// -----------------enrollment --------------------
 import enrollmentRoutes from "./routes/enrollmentRoutes.js";
-// -----------------quizzes --------------------
 import questionRoutes from "./routes/questionRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
-
+import attachmentRoutes from "./routes/attachmentRoutes.js"
 dotenv.config();
 
 // Import configurations
@@ -32,6 +30,20 @@ import passport from "./config/passport.js";
 import { createResponse } from "./utils/helpers.js";
 
 const app = express();
+
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// Body parsing middleware
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(cookieParser());
 
 app.use(
   helmet({
@@ -54,21 +66,10 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || "*",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
 
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-// Body parsing middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use(cookieParser());
+
 
 // Session middleware
 app.use(session(sessionConfig));
@@ -92,6 +93,7 @@ app.use("/api/enrollments", enrollmentRoutes);
 // for quizzes and questions
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/questions", questionRoutes);
+app.use("api/Attachment", attachmentRoutes);
 
 app.get("/health", (req, res) => {
   res.json(

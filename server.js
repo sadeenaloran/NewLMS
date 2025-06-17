@@ -45,6 +45,6 @@ process.on('unhandledRejection', (err) => {
 startServer();
 
 
-app.listen(PORT, () => {
-  console.log(`Server is running in ${ENV} mode on port ${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Server is running in ${ENV} mode on port ${PORT}`);
+// });
