@@ -10,7 +10,7 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoute from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import "./config/db.js";
-import { errorHandler, notFound } from "./middlewares/errorMiddleware.js"; 
+import { errorHandler, notFound } from "./middlewares/errorMiddleware.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import moduleRoutes from "./routes/moduleRoutes.js";
@@ -20,7 +20,7 @@ import submissionRoutes from "./routes/submissionRoutes.js";
 import enrollmentRoutes from "./routes/enrollmentRoutes.js";
 import questionRoutes from "./routes/questionRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
-import attachmentRoutes from "./routes/attachmentRoutes.js"
+import attachmentRoutes from "./routes/attachmentRoutes.js";
 dotenv.config();
 
 // Import configurations
@@ -57,7 +57,6 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
-
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -71,10 +70,6 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 app.use(limiter);
-
-
-
-
 
 // Session middleware
 app.use(session(sessionConfig));

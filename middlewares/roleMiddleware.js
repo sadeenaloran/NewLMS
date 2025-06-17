@@ -47,10 +47,10 @@ export const isAdmin = (req, res, next) => {
 
 // Middleware to verify if the user is an admin
 export const verifyAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ 
+  if (req.user.role !== "admin") {
+    return res.status(403).json({
       success: false,
-      error: "Admin privileges required" 
+      error: "Admin privileges required",
     });
   }
   next();
@@ -69,8 +69,8 @@ export const isInstructorOrAdmin = (req, res, next) => {
       error: "Instructor or admin access required",
       code: "FORBIDDEN",
       currentRole: req.user.role,
-      requiredRoles: ["instructor", "admin"], 
-      userId: req.user.id
+      requiredRoles: ["instructor", "admin"],
+      userId: req.user.id,
     });
   }
 
@@ -104,7 +104,3 @@ export const isStudent = (req, res, next) => {
 
   return next();
 };
-
-
-
-

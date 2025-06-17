@@ -21,7 +21,10 @@ export default {
       }
 
       // Create enrollment
-      const enrollment = await enrollmentService.createEnrollment(userId, courseId);
+      const enrollment = await enrollmentService.createEnrollment(
+        userId,
+        courseId
+      );
 
       res.status(201).json({
         success: true,
@@ -108,7 +111,10 @@ export default {
       }
 
       // Get detailed progress
-      const progressDetails = await enrollmentService.getCourseProgressDetails(id, userId);
+      const progressDetails = await enrollmentService.getCourseProgressDetails(
+        id,
+        userId
+      );
 
       res.status(200).json({
         success: true,
@@ -133,31 +139,40 @@ export default {
       if (!lessonId) {
         return res.status(400).json({
           success: false,
-          error: "Lesson ID is required"
+          error: "Lesson ID is required",
         });
       }
 
       // Mark lesson as completed
-      const completion = await enrollmentService.markLessonCompleted(userId, lessonId);
+      const completion = await enrollmentService.markLessonCompleted(
+        userId,
+        lessonId
+      );
 
       // Get course ID for the lesson
-      const courseId = await enrollmentService.getItemCourseId(lessonId, 'lesson');
+      const courseId = await enrollmentService.getItemCourseId(
+        lessonId,
+        "lesson"
+      );
 
       if (!courseId) {
         return res.status(404).json({
           success: false,
-          error: "Course not found for this lesson"
+          error: "Course not found for this lesson",
         });
       }
 
       // Calculate and update overall progress
-      const updatedProgress = await enrollmentService.calculateProgress(userId, courseId);
+      const updatedProgress = await enrollmentService.calculateProgress(
+        userId,
+        courseId
+      );
 
       res.status(200).json({
         success: true,
         message: "Lesson marked as completed",
         completion,
-        progress: updatedProgress
+        progress: updatedProgress,
       });
     } catch (error) {
       res.status(400).json({
@@ -178,26 +193,35 @@ export default {
       if (!courseId) {
         return res.status(400).json({
           success: false,
-          error: "Course ID is required"
+          error: "Course ID is required",
         });
       }
 
       // Check if user is enrolled
-      const isEnrolled = await enrollmentService.checkUserEnrollment(userId, courseId);
+      const isEnrolled = await enrollmentService.checkUserEnrollment(
+        userId,
+        courseId
+      );
       if (!isEnrolled) {
         return res.status(403).json({
           success: false,
-          error: "User is not enrolled in this course"
+          error: "User is not enrolled in this course",
         });
       }
 
-      const summary = await enrollmentService.getUserProgressSummary(userId, courseId);
-      const completedLessons = await enrollmentService.getCompletedLessons(userId, courseId);
+      const summary = await enrollmentService.getUserProgressSummary(
+        userId,
+        courseId
+      );
+      const completedLessons = await enrollmentService.getCompletedLessons(
+        userId,
+        courseId
+      );
 
       res.status(200).json({
         success: true,
         summary,
-        completedLessons
+        completedLessons,
       });
     } catch (error) {
       res.status(400).json({
@@ -205,5 +229,5 @@ export default {
         error: error.message,
       });
     }
-  }
+  },
 };

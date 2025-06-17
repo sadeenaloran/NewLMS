@@ -2,7 +2,10 @@ import LessonModel from "../models/Lesson.js";
 import ModuleModel from "../models/Module.js";
 import CourseModel from "../models/Course.js";
 import AssignmentModel from "../models/Assignment.js";
-import { createLessonSchema, updateLessonSchema } from "../utils/lessonValidation.js";
+import {
+  createLessonSchema,
+  updateLessonSchema,
+} from "../utils/lessonValidation.js";
 
 const LessonController = {
   async createLesson(req, res, next) {

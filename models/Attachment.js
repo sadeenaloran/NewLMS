@@ -2,7 +2,14 @@
 import { pool } from "../config/db.js";
 
 const AttachmentModel = {
-  async createAttachment(original_name, mime_type, size, public_id, secure_url, format) {
+  async createAttachment(
+    original_name,
+    mime_type,
+    size,
+    public_id,
+    secure_url,
+    format
+  ) {
     try {
       const { rows } = await pool.query(
         `INSERT INTO attachments 
@@ -17,7 +24,7 @@ const AttachmentModel = {
     }
   },
 
-  async   getAttachmentById(id) {
+  async getAttachmentById(id) {
     try {
       const { rows } = await pool.query(
         `SELECT * FROM attachments WHERE id = $1`,
@@ -39,7 +46,7 @@ const AttachmentModel = {
     } catch (error) {
       throw error;
     }
-  }
+  },
 };
 
 export default AttachmentModel;

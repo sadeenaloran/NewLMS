@@ -1,11 +1,18 @@
 import multer from "multer";
 import AttachmentModel from "../models/Attachment.js";
-import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
-import { uploadFileSchema, idParamSchema, attachmentDTOSchema } from "../utils/attachmentValidation.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../config/cloudinary.js";
+import {
+  uploadFileSchema,
+  idParamSchema,
+  attachmentDTOSchema,
+} from "../utils/attachmentValidation.js";
 
 export const uploadFile = async (req, res) => {
   try {
-     const { error } = uploadFileSchema.validate({ file: req.file });
+    const { error } = uploadFileSchema.validate({ file: req.file });
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
@@ -18,7 +25,8 @@ export const uploadFile = async (req, res) => {
       resourse_type: "auto",
     });
 
-    const { error: cloudinaryError } = cloudinaryResponseSchema.validate(result);
+    const { error: cloudinaryError } =
+      cloudinaryResponseSchema.validate(result);
     if (cloudinaryError) {
       return res.status(500).json({ message: "Invalid Cloudinary response" });
     }
@@ -32,7 +40,7 @@ export const uploadFile = async (req, res) => {
       format: result.secure_url,
     };
 
-     const { error: dtoError } = attachmentDTOSchema.validate(attachmentDTO);
+    const { error: dtoError } = attachmentDTOSchema.validate(attachmentDTO);
     if (dtoError) {
       return res.status(500).json({ message: "Invalid attachment data" });
     }
@@ -51,7 +59,7 @@ export const uploadFile = async (req, res) => {
 
 export const getFileById = async (req, res) => {
   try {
-     const { error } = idParamSchema.validate({ id: req.params.id });
+    const { error } = idParamSchema.validate({ id: req.params.id });
     if (error) {
       return res.status(400).json({ message: "Invalid attachment ID" });
     }
@@ -73,7 +81,7 @@ export const getFileById = async (req, res) => {
 
 export const deleteFile = async (req, res) => {
   try {
-     const { error } = idParamSchema.validate({ id: req.params.id });
+    const { error } = idParamSchema.validate({ id: req.params.id });
     if (error) {
       return res.status(400).json({ message: "Invalid attachment ID" });
     }

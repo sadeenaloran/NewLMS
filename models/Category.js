@@ -12,7 +12,8 @@ const CategoryModel = {
       throw error;
     }
   },
- async updateCategory(id, value) {
+  
+  async updateCategory(id, value) {
     try {
       const { name } = value;
       const { rows } = await pool.query(
@@ -24,6 +25,7 @@ const CategoryModel = {
       throw error;
     }
   },
+
   async deleteCategory(id) {
     try {
       const { rowCount } = await pool.query(
@@ -35,6 +37,7 @@ const CategoryModel = {
       throw error;
     }
   },
+
   async findAll() {
     try {
       const { rows } = await pool.query("SELECT * FROM categories");
@@ -55,7 +58,6 @@ const CategoryModel = {
       throw error;
     }
   },
-  
 };
 
 export default CategoryModel;

@@ -1,7 +1,10 @@
 import CourseModel from "../models/Course.js";
 import bcrypt from "bcryptjs";
 import UserModel from "../models/userModel.js";
-import { addUserSchema, changePasswordSchema } from "../utils/userValidation.js";
+import {
+  addUserSchema,
+  changePasswordSchema,
+} from "../utils/userValidation.js";
 
 import ExcelJS from "exceljs";
 
