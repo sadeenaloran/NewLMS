@@ -1,6 +1,6 @@
 import express from 'express';
 import enrollmentController from '../controllers/enrollmentController.js';
-import { authenticate, authorize } from '../middleware/authMiddleware.js';
+import { authenticate, authorize } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 

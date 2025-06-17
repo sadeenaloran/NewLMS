@@ -8,9 +8,9 @@ import {
 import {
   isAuthenticated,
   authenticateJWT,
-} from "../middleware/authMiddleware.js";
-import { validateUserProfile } from "../middleware/validation.js";
-import { isStudent, isAdmin } from "../middleware/roleMiddleware.js";
+} from "../middlewares/authMiddleware.js";
+import { validateUserProfile } from "../utils/enrollmentValidation.js";
+import { isStudent, isAdmin } from "../middlewares/roleMiddleware.js";
 
 const router = express.Router();
 router.use(isAuthenticated);

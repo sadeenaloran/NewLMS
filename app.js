@@ -10,6 +10,7 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoute from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import "./config/db.js";
+import { errorHandler, notFound } from "./middlewares/errorMiddleware.js"; 
 import adminRoutes from "./routes/adminRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import moduleRoutes from "./routes/moduleRoutes.js";
@@ -31,6 +32,14 @@ import { createResponse } from "./utils/helpers.js";
 
 const app = express();
 
+// Security middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:3000",
@@ -40,17 +49,14 @@ app.use(
   })
 );
 
+// Logging
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
-app.use(
-  helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false,
-  })
-);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -67,7 +73,6 @@ const limiter = rateLimit({
 app.use(limiter);
 
 
-app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 
 
@@ -95,16 +100,6 @@ app.use("/api/quizzes", quizRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("api/Attachment", attachmentRoutes);
 
-app.get("/health", (req, res) => {
-  res.json(
-    createResponse(true, "Server is running", {
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-    })
-  );
-});
-
 app.get("/", (req, res) => {
   res.json(
     createResponse(true, "OAuth 2 Google Authentication API", {
@@ -119,5 +114,20 @@ app.get("/", (req, res) => {
     })
   );
 });
+
+// Health check
+app.get("/health", (req, res) => {
+  res.json(
+    createResponse(true, "Server is running", {
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    })
+  );
+});
+
+// Error handling
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;

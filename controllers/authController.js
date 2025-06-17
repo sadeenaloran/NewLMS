@@ -4,7 +4,7 @@ import {
   registerSchema,
   loginSchema,
   changePasswordSchema,
-} from "../utils/validation.js";
+} from "../utils/userValidation.js";
 
 import passport from "../config/passport.js";
 import { generateToken, generateRefreshToken } from "../utils/jwt.js";
@@ -17,7 +17,22 @@ export const googleAuth = passport.authenticate("google", {
 
 const AuthController = {
   googleAuthCallback: async (req, res) => {
+ passport.authenticate('google', { failureRedirect: '/login' }, async (err, user) => {
+    if (err) {
+      console.error('Google OAuth error:', err);
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_error`);
+    }
+
+    if (!user) {
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
+    }
+
     try {
+      req.logIn(user, async (err) => {
+        if (err) {
+          console.error('Login error:', err);
+          return res.redirect(`${process.env.CLIENT_URL}/login?error=login_failed`);
+        }      
       // 1. Get Google user info from req.user
       const { email, name, avatar, sub: googleId } = req.user;
 
@@ -55,10 +70,12 @@ const AuthController = {
           user.email
         )}&avatar=${encodeURIComponent(user.avatar || "")}&role=${user.role}`
       );
+    });
     } catch (error) {
       console.error(`Google callback error: ${error.message}`);
       res.redirect(`${process.env.CORS_ORIGIN}/login?error=oauth_failed`);
     }
+      })(req, res, next);
   },
 
   async linkGoogleAccount(req, res, next) {

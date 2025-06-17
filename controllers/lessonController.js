@@ -2,9 +2,18 @@ import LessonModel from "../models/Lesson.js";
 import ModuleModel from "../models/Module.js";
 import CourseModel from "../models/Course.js";
 import AssignmentModel from "../models/Assignment.js";
+import { createLessonSchema, updateLessonSchema } from "../utils/lessonValidation.js";
+
 const LessonController = {
   async createLesson(req, res, next) {
     try {
+      const { error, value } = createLessonSchema.validate(req.body);
+      if (error) {
+        return res
+          .status(400)
+          .json({ success: false, message: error.details[0].message });
+      }
+
       const { module_id, title, content_type, content_url, duration, order } =
         req.body;
 
@@ -82,6 +91,13 @@ const LessonController = {
 
   async updateLesson(req, res, next) {
     try {
+      const { error, value } = updateLessonSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: error.details[0].message,
+        });
+      }
       const lesson = await LessonModel.findById(req.params.id);
       if (!lesson) {
         return res.status(404).json({
