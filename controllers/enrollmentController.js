@@ -1,5 +1,5 @@
 import enrollmentService from "../models/Enrollment.js";
-import { validateEnrollmentInput } from "../middleware/validation.js";
+import { validateEnrollmentInput } from "../utils/enrollmentValidation.js";
 
 export default {
   /**

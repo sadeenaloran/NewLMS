@@ -10,8 +10,10 @@ export const uploadFileSchema = Joi.object({
       .required(),
     size: Joi.number().max(MAX_FILE_SIZE).required(),
     buffer: Joi.binary().required(),
-  }).required(),
-}).unknown(true); // Allow other fields that multer might add
+  })
+    .required()
+    .unknown(true), // ✅ السماح بخصائص إضافية داخل الملف نفسه
+}).unknown(true); // (اختياري) السماح بخصائص إضافية خارج `file`
 
 // Schema for ID parameter validation
 export const idParamSchema = Joi.object({
