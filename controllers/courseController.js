@@ -5,17 +5,8 @@ import { courseSchema, courseUpdateSchema } from "../utils/courseValidation.js";
 const CourseController = {
   async createCourse(req, res, next) {
     try {
-      const { error, value } = courseSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          success: false,
-          message: error.details[0].message,
-        });
-      }
-      const { title, description, category_id, duration } = req.body;
-
-      // استخدام صورة افتراضية مؤقتًا
-      const thumbnail_url = "https://via.placeholder.com/800x450";
+      const { title, description, category_id, thumbnail_url, duration } =
+        req.body;
 
       const course = await CourseModel.create({
         title,
@@ -24,7 +15,6 @@ const CourseController = {
         category_id,
         thumbnail_url,
         duration,
-        status: "pending",
       });
 
       res.status(201).json({ success: true, course });
@@ -32,66 +22,6 @@ const CourseController = {
       next(error);
     }
   },
-
-  async updateCourse(req, res, next) {
-    try {
-      const course = await CourseModel.findById(req.params.id);
-      if (!course) {
-        return res
-          .status(404)
-          .json({ success: false, message: "Course not found" });
-      }
-      if (req.user.role !== "admin" && course.instructor_id !== req.user.id) {
-        return res.status(403).json({
-          success: false,
-          message: "Unauthorized: You can only edit your own courses",
-        });
-      }
-
-      const { error, value } = courseUpdateSchema.validate(req.body);
-      if (error) {
-        return res.status(400).json({
-          success: false,
-          message: error.details[0].message,
-        });
-      }
-
-      const updates = {
-        title: req.body.title,
-        description: req.body.description,
-        category_id: req.body.category_id,
-        duration: req.body.duration,
-        status: "pending",
-      };
-
-      // الاحتفاظ بالصورة الحالية إذا لم يتم توفير جديدة
-      updates.thumbnail_url = course.thumbnail_url;
-
-      const updatedCourse = await CourseModel.update(req.params.id, updates);
-      res.json({ success: true, course: updatedCourse });
-    } catch (error) {
-      next(error);
-    }
-  },
-  // async createCourse(req, res, next) {
-  //   try {
-  //     const { title, description, category_id, thumbnail_url, duration } =
-  //       req.body;
-
-  //     const course = await CourseModel.create({
-  //       title,
-  //       description,
-  //       instructor_id: req.user.id,
-  //       category_id,
-  //       thumbnail_url,
-  //       duration,
-  //     });
-
-  //     res.status(201).json({ success: true, course });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // },
 
   async getAllCourses(req, res, next) {
     try {
@@ -134,41 +64,41 @@ const CourseController = {
     }
   },
 
-  // async updateCourse(req, res, next) {
-  //   try {
-  //     const course = await CourseModel.findById(req.params.id);
-  //     if (!course) {
-  //       return res
-  //         .status(404)
-  //         .json({ success: false, message: "Course not found" });
-  //     }
+  async updateCourse(req, res, next) {
+    try {
+      const course = await CourseModel.findById(req.params.id);
+      if (!course) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Course not found" });
+      }
 
-  //     if (req.user.role !== "admin" && course.instructor_id !== req.user.id) {
-  //       return res.status(403).json({
-  //         success: false,
-  //         message: "Unauthorized: You can only edit your own courses",
-  //       });
-  //     }
+      if (req.user.role !== "admin" && course.instructor_id !== req.user.id) {
+        return res.status(403).json({
+          success: false,
+          message: "Unauthorized: You can only edit your own courses",
+        });
+      }
 
-  //     const updates = {
-  //       title: req.body.title,
-  //       description: req.body.description,
-  //       category_id: req.body.category_id,
-  //       thumbnail_url: req.body.thumbnail_url,
-  //       duration: req.body.duration,
-  //     };
+      const updates = {
+        title: req.body.title,
+        description: req.body.description,
+        category_id: req.body.category_id,
+        thumbnail_url: req.body.thumbnail_url,
+        duration: req.body.duration,
+      };
 
-  //     if (req.user.role === "admin" && req.body.status) {
-  //       updates.status = req.body.status;
-  //       updates.feedback = req.body.feedback;
-  //     }
+      if (req.user.role === "admin" && req.body.status) {
+        updates.status = req.body.status;
+        updates.feedback = req.body.feedback;
+      }
 
-  //     const updatedCourse = await CourseModel.update(req.params.id, updates);
-  //     res.json({ success: true, course: updatedCourse });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // },
+      const updatedCourse = await CourseModel.update(req.params.id, updates);
+      res.json({ success: true, course: updatedCourse });
+    } catch (error) {
+      next(error);
+    }
+  },
 
   async deleteCourse(req, res, next) {
     try {
