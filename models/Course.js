@@ -150,6 +150,31 @@ const CourseModel = {
       throw error;
     }
   },
+
+  async getPopularityReport() {
+    try {
+      const result = await pool.query(
+        `
+      SELECT 
+        c.title as label,
+        COUNT(e.id) as enrollments
+      FROM courses c
+      LEFT JOIN enrollments e ON e.course_id = c.id
+      WHERE c.status = 'approved'
+      GROUP BY c.id
+      ORDER BY enrollments DESC
+      LIMIT 10
+    `
+      );
+
+      return {
+        labels: result.rows.map((row) => row.label),
+        enrollments: result.rows.map((row) => Number(row.enrollments)),
+      };
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default CourseModel;

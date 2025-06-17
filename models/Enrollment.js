@@ -14,7 +14,7 @@ export default {
       );
 
       if (existing.rows.length > 0) {
-        throw new Error('User already enrolled in this course');
+        throw new Error("User already enrolled in this course");
       }
 
       // Create new enrollment with 0 progress
@@ -41,7 +41,7 @@ export default {
       );
 
       if (result.rows.length === 0) {
-        throw new Error('Enrollment not found');
+        throw new Error("Enrollment not found");
       }
 
       return result.rows[0];
@@ -76,14 +76,14 @@ export default {
     try {
       let query;
       switch (itemType) {
-        case 'lesson':
+        case "lesson":
           query = `
             SELECT m.course_id 
             FROM lessons l
             JOIN modules m ON l.module_id = m.id
             WHERE l.id = $1`;
           break;
-        case 'quiz':
+        case "quiz":
           query = `
             SELECT m.course_id 
             FROM quizzes q
@@ -91,7 +91,7 @@ export default {
             JOIN modules m ON l.module_id = m.id
             WHERE q.id = $1`;
           break;
-        case 'assignment':
+        case "assignment":
           query = `
             SELECT m.course_id 
             FROM assignments a
@@ -100,7 +100,7 @@ export default {
             WHERE a.id = $1`;
           break;
         default:
-          throw new Error('Invalid item type');
+          throw new Error("Invalid item type");
       }
 
       const result = await pool.query(query, [itemId]);
@@ -215,8 +215,9 @@ export default {
 
         // Get quizzes for each lesson
         for (const lesson of lessons.rows) {
-          lesson.quizzes = (await pool.query(
-            `SELECT q.*, 
+          lesson.quizzes = (
+            await pool.query(
+              `SELECT q.*, 
              EXISTS(
                SELECT 1 FROM quiz_submissions qs
                WHERE qs.user_id = $1 AND qs.quiz_id = q.id
@@ -227,12 +228,14 @@ export default {
              ) as score
              FROM quizzes q
              WHERE q.lesson_id = $2`,
-            [userId, lesson.id]
-          )).rows;
+              [userId, lesson.id]
+            )
+          ).rows;
 
           // Get assignments for each lesson
-          lesson.assignments = (await pool.query(
-            `SELECT a.*, 
+          lesson.assignments = (
+            await pool.query(
+              `SELECT a.*, 
              EXISTS(
                SELECT 1 FROM submissions s
                WHERE s.user_id = $1 AND s.assignment_id = a.id
@@ -243,8 +246,9 @@ export default {
              ) as score
              FROM assignments a
              WHERE a.lesson_id = $2`,
-            [userId, lesson.id]
-          )).rows;
+              [userId, lesson.id]
+            )
+          ).rows;
         }
 
         module.lessons = lessons.rows;
@@ -253,7 +257,7 @@ export default {
       return {
         enrollment,
         courseStructure: modules.rows,
-        progress: enrollment.progress
+        progress: enrollment.progress,
       };
     } catch (error) {
       throw error;
@@ -308,7 +312,7 @@ export default {
       return {
         lessons: lessonStats.rows[0],
         quizzes: quizStats.rows[0],
-        assignments: assignmentStats.rows[0]
+        assignments: assignmentStats.rows[0],
       };
     } catch (error) {
       throw error;
@@ -331,5 +335,5 @@ export default {
     } catch (error) {
       throw error;
     }
-  }
+  },
 };

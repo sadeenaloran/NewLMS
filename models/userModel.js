@@ -4,7 +4,15 @@ import jwt from "jsonwebtoken";
 
 const UserModel = {
   // Create a new user (local or OAuth)
-  async create({ name, email, password, role, avatar, oauth_id, oauth_provider }) {
+  async create({
+    name,
+    email,
+    password,
+    role,
+    avatar,
+    oauth_id,
+    oauth_provider,
+  }) {
     try {
       if (!email || !name || (!password && !oauth_id)) {
         const error = new Error("Missing required fields");
@@ -74,10 +82,9 @@ const UserModel = {
         error.status = 400;
         throw error;
       }
-      const { rows } = await pool.query(
-        `SELECT * FROM users WHERE id = $1`,
-        [id]
-      );
+      const { rows } = await pool.query(`SELECT * FROM users WHERE id = $1`, [
+        id,
+      ]);
       return rows[0] || null;
     } catch (error) {
       error.message = `Failed to find user by ID: ${error.message}`;
@@ -128,7 +135,7 @@ const UserModel = {
   async delete(id) {
     try {
       const { rows } = await pool.query(
-      `UPDATE users SET is_active = false, deleted_at = NOW() WHERE id = $1`,
+        `UPDATE users SET is_active = false, deleted_at = NOW() WHERE id = $1`,
         [id]
       );
       return rows[0];
@@ -262,6 +269,77 @@ const UserModel = {
     } catch (error) {
       error.message = `Failed to update last login: ${error.message}`;
       error.status = error.status || 500;
+      throw error;
+    }
+  },
+  async getActivityReport(timeRange = "monthly") {
+    try {
+      let query;
+      const params = [];
+
+      switch (timeRange) {
+        case "daily":
+          query = query = `
+  SELECT 
+    DATE_TRUNC('hour', created_at) AS time_label,
+    COUNT(*) AS new_signups,
+    SUM(CASE WHEN last_login >= DATE_TRUNC('hour', created_at) THEN 1 ELSE 0 END) AS active_users
+  FROM users
+  WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE)
+  GROUP BY time_label
+  ORDER BY time_label`;
+          break;
+
+        case "weekly":
+          // بديل باستخدام last_login فقط
+          query = `
+  SELECT 
+    DATE_TRUNC('day', created_at) AS time_label,
+    COUNT(*) AS new_signups,
+    SUM(CASE WHEN last_login >= DATE_TRUNC('day', created_at) THEN 1 ELSE 0 END) AS active_users
+  FROM users
+  WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE)
+  GROUP BY time_label
+  ORDER BY time_label`;
+          break;
+
+        case "monthly":
+        default:
+          query = `
+  SELECT 
+    DATE_TRUNC('day', created_at) AS time_label,
+    COUNT(*) AS new_signups,
+    SUM(CASE WHEN last_login >= DATE_TRUNC('day', created_at) THEN 1 ELSE 0 END) AS active_users
+  FROM users
+  WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE)
+  GROUP BY time_label
+  ORDER BY time_label`;
+      }
+
+      const { rows } = await pool.query(query, params);
+
+      if (!rows || rows.length === 0) {
+        return {
+          labels: [],
+          activeUsers: [],
+          newSignups: [],
+        };
+      }
+
+      return {
+        labels: rows.map((row) =>
+          timeRange === "monthly" || timeRange === "weekly"
+            ? new Date(row.time_label).toLocaleDateString()
+            : new Date(row.time_label).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+        ),
+        activeUsers: rows.map((row) => Number(row.active_users || 0)),
+        newSignups: rows.map((row) => Number(row.new_signups || 0)),
+      };
+    } catch (error) {
+      console.error(`Error in getActivityReport (${timeRange}):`, error);
       throw error;
     }
   },
