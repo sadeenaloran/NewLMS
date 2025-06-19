@@ -6,6 +6,7 @@ const router = Router();
 
 // Public route
 router.get("/:courseId/modules", ModuleController.getModulesByCourse);
+router.get("/modules/:id", ModuleController.getModuleById);
 
 // Protected routes
 router.use(authenticate);

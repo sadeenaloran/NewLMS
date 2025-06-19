@@ -17,65 +17,79 @@ export const googleAuth = passport.authenticate("google", {
 
 const AuthController = {
   googleAuthCallback: async (req, res) => {
- passport.authenticate('google', { failureRedirect: '/login' }, async (err, user) => {
-    if (err) {
-      console.error('Google OAuth error:', err);
-      return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_error`);
-    }
-
-    if (!user) {
-      return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
-    }
-
-    try {
-      req.logIn(user, async (err) => {
+    passport.authenticate(
+      "google",
+      { failureRedirect: "/login" },
+      async (err, user) => {
         if (err) {
-          console.error('Login error:', err);
-          return res.redirect(`${process.env.CLIENT_URL}/login?error=login_failed`);
-        }      
-      // 1. Get Google user info from req.user
-      const { email, name, avatar, sub: googleId } = req.user;
+          console.error("Google OAuth error:", err);
+          return res.redirect(
+            `${process.env.CLIENT_URL}/login?error=oauth_error`
+          );
+        }
 
-      // 2. Try to find user by email
-      let user = await UserModel.findByEmail(email);
+        if (!user) {
+          return res.redirect(
+            `${process.env.CLIENT_URL}/login?error=oauth_failed`
+          );
+        }
 
-      if (!user) {
-        // 3. If not found, create a new user
-        user = await UserModel.create({
-          name,
-          email,
-          avatar,
-          oauth_provider: "google",
-          oauth_id: googleId,
-          role: "student", // or your default
-        });
-      } else {
-        // 4. If found, update OAuth info if needed
-        await UserModel.linkOAuthAccount(user.id, {
-          provider: "google",
-          providerId: googleId,
-          email,
-        });
+        try {
+          req.logIn(user, async (err) => {
+            if (err) {
+              console.error("Login error:", err);
+              return res.redirect(
+                `${process.env.CLIENT_URL}/login?error=login_failed`
+              );
+            }
+            // 1. Get Google user info from req.user
+            const { email, name, avatar, sub: googleId } = req.user;
+
+            // 2. Try to find user by email
+            let user = await UserModel.findByEmail(email);
+
+            if (!user) {
+              // 3. If not found, create a new user
+              user = await UserModel.create({
+                name,
+                email,
+                avatar,
+                oauth_provider: "google",
+                oauth_id: googleId,
+                role: "student", // or your default
+              });
+            } else {
+              // 4. If found, update OAuth info if needed
+              await UserModel.linkOAuthAccount(user.id, {
+                provider: "google",
+                providerId: googleId,
+                email,
+              });
+            }
+
+            // 5. Issue JWT/session as for local login
+            const token = UserModel.generateToken(user.id, user.role);
+            await UserModel.updateLastLogin(user.id);
+
+            // 6. Redirect or respond with token and user info
+            res.redirect(
+              `${process.env.CORS_ORIGIN}/auth/success?token=${token}&id=${
+                user.id
+              }&name=${encodeURIComponent(
+                user.name
+              )}&email=${encodeURIComponent(
+                user.email
+              )}&avatar=${encodeURIComponent(user.avatar || "")}&role=${
+                user.role
+              }`
+            );
+          });
+        } catch (error) {
+          console.error(`Google callback error: ${error.message}`);
+          res.redirect(`${process.env.CORS_ORIGIN}/login?error=oauth_failed`);
+        }
       }
-
-      // 5. Issue JWT/session as for local login
-      const token = UserModel.generateToken(user.id, user.role);
-      await UserModel.updateLastLogin(user.id);
-
-      // 6. Redirect or respond with token and user info
-      res.redirect(
-        `${process.env.CORS_ORIGIN}/auth/success?token=${token}&id=${user.id}&name=${encodeURIComponent(
-          user.name
-        )}&email=${encodeURIComponent(
-          user.email
-        )}&avatar=${encodeURIComponent(user.avatar || "")}&role=${user.role}`
-      );
-    });
-    } catch (error) {
-      console.error(`Google callback error: ${error.message}`);
-      res.redirect(`${process.env.CORS_ORIGIN}/login?error=oauth_failed`);
-    }
-      })(req, res, next);
+    )(req, res, next);
   },
 
   async linkGoogleAccount(req, res, next) {
@@ -140,7 +154,13 @@ const AuthController = {
           .status(409)
           .json({ success: false, message: "Email already in use" });
       }
-      const newUser = await UserModel.create({ name, email, password, confirm_password, role });
+      const newUser = await UserModel.create({
+        name,
+        email,
+        password,
+        confirm_password,
+        role,
+      });
 
       const token = UserModel.generateToken(newUser.id, newUser.role);
 
@@ -318,12 +338,17 @@ const AuthController = {
       if (!user.password_hash) {
         return res
           .status(400)
-          .json({ success: false, message: "No password set for this account" });
+          .json({
+            success: false,
+            message: "No password set for this account",
+          });
       }
 
       const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
       if (!isMatch) {
-        return res.status(400).json({ success: false, message: "Invalid password" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid password" });
       }
 
       await UserModel.updatePassword(userId, newPassword);
@@ -342,7 +367,7 @@ const AuthController = {
 
 // Add a static or utility method for verifying Google token
 AuthController.verifyGoogleToken = async function (googleToken) {
-  const { OAuth2Client } = await import('google-auth-library');
+  const { OAuth2Client } = await import("google-auth-library");
   const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   const ticket = await client.verifyIdToken({
     idToken: googleToken,
