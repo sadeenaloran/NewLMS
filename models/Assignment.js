@@ -60,6 +60,43 @@ const AssignmentModel = {
     await pool.query("DELETE FROM assignments WHERE id = $1", [id]);
     return true;
   },
+  // models/AssignmentModel.js
+  findManyByLessonIds: async (lessonIds) => {
+    if (!lessonIds.length) return [];
+
+    const placeholders = lessonIds.map((_, i) => `$${i + 1}`).join(", ");
+    const query = `
+    SELECT a.*, l.title as lesson_title, l.module_id
+    FROM assignments a
+    JOIN lessons l ON a.lesson_id = l.id
+    WHERE a.lesson_id IN (${placeholders})
+  `;
+    const { rows } = await pool.query(query, lessonIds);
+    return rows;
+  },
+  // داخل AssignmentModel.js
+  findDetailedByLessonIds: async (lessonIds) => {
+    if (!lessonIds.length) return [];
+
+    const placeholders = lessonIds.map((_, i) => `$${i + 1}`).join(", ");
+    const query = `
+    SELECT 
+      a.*, 
+      l.title AS lesson_title,
+      m.title AS module_title,
+      c.title AS course_title,
+      c.id AS course_id,
+      m.id AS module_id
+    FROM assignments a
+    JOIN lessons l ON a.lesson_id = l.id
+    JOIN modules m ON l.module_id = m.id
+    JOIN courses c ON m.course_id = c.id
+    WHERE a.lesson_id IN (${placeholders})
+  `;
+
+    const { rows } = await pool.query(query, lessonIds);
+    return rows;
+  },
 };
 
 export default AssignmentModel;

@@ -12,6 +12,12 @@ router.get(
   authorize(["instructor"]),
   AssignmentController.getInstructorCoursesWithHierarchy
 );
+router.get(
+  "/instructor/all",
+  authorize(["instructor"]),
+  AssignmentController.getInstructorAssignments
+);
+
 // Instructor/Admin routes
 router.post(
   "/",
