@@ -1,6 +1,6 @@
 import { Router } from "express";
 import CategoryController from "../controllers/categoryController.js";
-import { authenticate, authorize } from "../middlewares/authMiddleware.js";
+import { authenticateJWT, authorize } from "../middlewares/authMiddleware.js";
  
 const router = Router();
 
@@ -10,9 +10,13 @@ router.get("/", CategoryController.getAllCategories);
 // Admin-only routes
 router.post(
   "/",
-  authenticate,
+  authenticateJWT,
   authorize(["admin"]),
   CategoryController.createCategory
 );
+router.put("/:id", authenticateJWT, authorize(["admin"]), CategoryController.updateCategory);
+router.delete("/:id", authenticateJWT, authorize(["admin"]), CategoryController.deleteCategory);
+router.get("/:id", CategoryController.getCategory);
+
 
 export default router;

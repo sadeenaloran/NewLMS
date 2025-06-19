@@ -9,4 +9,5 @@ export const ALLOWED_FILE_TYPES = [
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'video/mp4', 'video/webm', 'video/ogg',
 ];
