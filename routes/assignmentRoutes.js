@@ -6,7 +6,12 @@ const router = Router();
 
 // Protected routes
 router.use(authenticate);
-
+// Add to assignmentRoutes.js
+router.get(
+  "/instructor/courses",
+  authorize(["instructor"]),
+  AssignmentController.getInstructorCoursesWithHierarchy
+);
 // Instructor/Admin routes
 router.post(
   "/",

@@ -1,7 +1,27 @@
 import enrollmentService from "../models/Enrollment.js";
 import { validateEnrollmentInput } from "../utils/enrollmentValidation.js";
+import EnrollmentModel from "../models/EnrollemtModel.js"; // نموذج تسجيلات
+import CourseModel from "../models/Course.js";
 
 export default {
+  async getAllEnrollmentsByInstructor(req, res, next) {
+    try {
+      const instructorId = req.user.id;
+      const courses = await CourseModel.findByInstructor(instructorId);
+      const courseIds = courses.map((c) => c.id);
+
+      // لو ما فيه كورسات يرجع مصفوفة فارغة عشان ما ينكسر
+      if (courseIds.length === 0) {
+        return res.json({ success: true, data: [] });
+      }
+
+      const enrollments = await EnrollmentModel.findAllByCourseIds(courseIds);
+
+      res.json({ success: true, data: enrollments });
+    } catch (error) {
+      next(error);
+    }
+  },
   /**
    * Enroll a user in a course
    */

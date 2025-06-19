@@ -164,6 +164,46 @@ const AssignmentController = {
       next(error);
     }
   },
+  // Add to AssignmentController.js
+  async getInstructorCoursesWithHierarchy(req, res, next) {
+    try {
+      const instructorId = req.user.id;
+
+      // ✅ Get courses by instructor using the correct method
+      const courses = await CourseModel.findByInstructor(instructorId);
+
+      const result = await Promise.all(
+        courses.map(async (course) => {
+          // ✅ Use proper ID field (PostgreSQL uses course.id, not course._id)
+          const modules = await ModuleModel.findByCourseId(course.id);
+
+          const modulesWithLessons = await Promise.all(
+            modules.map(async (module) => {
+              const lessons = await LessonModel.findByModuleId(module.id);
+
+              return {
+                ...module, // no toObject needed
+                lessons,
+              };
+            })
+          );
+
+          return {
+            ...course,
+            modules: modulesWithLessons,
+          };
+        })
+      );
+
+      res.json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      console.error("Error in getInstructorCoursesWithHierarchy:", error);
+      next(error);
+    }
+  },
 };
 
 export default AssignmentController;

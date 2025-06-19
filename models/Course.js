@@ -76,7 +76,17 @@ const CourseModel = {
   async findByInstructor(instructorId) {
     try {
       const { rows } = await pool.query(
-        "SELECT * FROM courses WHERE instructor_id = $1",
+        `
+      SELECT 
+        c.*, 
+        u.name as instructor_name,
+        COUNT(e.id) AS enrollments_count
+      FROM courses c
+      JOIN users u ON c.instructor_id = u.id
+      LEFT JOIN enrollments e ON e.course_id = c.id
+      WHERE c.instructor_id = $1
+      GROUP BY c.id, u.name
+      `,
         [instructorId]
       );
       return rows;
@@ -84,7 +94,28 @@ const CourseModel = {
       throw error;
     }
   },
+  async findAllByCourseIds(courseIds) {
+    if (!courseIds.length) return [];
 
+    const placeholders = courseIds.map((_, idx) => `$${idx + 1}`).join(", ");
+    const query = `
+      SELECT 
+        e.id,
+        e.student_id,
+        e.course_id,
+        e.status,
+        e.created_at AS enrollmentDate,
+        s.name AS studentName,
+        c.title AS courseTitle
+      FROM enrollments e
+      JOIN users s ON e.student_id = s.id
+      JOIN courses c ON e.course_id = c.id
+      WHERE e.course_id IN (${placeholders})
+    `;
+
+    const { rows } = await db.query(query, courseIds);
+    return rows;
+  },
   async update(id, updates) {
     const {
       title,
@@ -125,15 +156,107 @@ const CourseModel = {
     }
   },
 
+  // async delete(id) {
+  //   try {
+  //     await pool.query("DELETE FROM courses WHERE id = $1", [id]);
+  //     return true;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // },
   async delete(id) {
+    const client = await pool.connect();
     try {
-      await pool.query("DELETE FROM courses WHERE id = $1", [id]);
+      await client.query("BEGIN");
+
+      // 1. حذف lesson_completions
+      await client.query(
+        `
+      DELETE FROM lesson_completions 
+      WHERE lesson_id IN (
+        SELECT id FROM lessons 
+        WHERE module_id IN (
+          SELECT id FROM modules WHERE course_id = $1
+        )
+      )
+    `,
+        [id]
+      );
+
+      // 2. حذف submissions
+      await client.query(
+        `
+      DELETE FROM submissions 
+      WHERE assignment_id IN (
+        SELECT id FROM assignments 
+        WHERE lesson_id IN (
+          SELECT id FROM lessons 
+          WHERE module_id IN (
+            SELECT id FROM modules WHERE course_id = $1
+          )
+        )
+      )
+    `,
+        [id]
+      );
+
+      // 3. حذف assignments
+      await client.query(
+        `
+      DELETE FROM assignments 
+      WHERE lesson_id IN (
+        SELECT id FROM lessons 
+        WHERE module_id IN (
+          SELECT id FROM modules WHERE course_id = $1
+        )
+      )
+    `,
+        [id]
+      );
+
+      // 4. حذف quizzes
+      await client.query(
+        `
+      DELETE FROM quizzes 
+      WHERE lesson_id IN (
+        SELECT id FROM lessons 
+        WHERE module_id IN (
+          SELECT id FROM modules WHERE course_id = $1
+        )
+      )
+    `,
+        [id]
+      );
+
+      // 5. حذف lessons
+      await client.query(
+        `
+      DELETE FROM lessons 
+      WHERE module_id IN (
+        SELECT id FROM modules WHERE course_id = $1
+      )
+    `,
+        [id]
+      );
+
+      // 6. حذف modules
+      await client.query(`DELETE FROM modules WHERE course_id = $1`, [id]);
+
+      // 7. حذف enrollments
+      await client.query(`DELETE FROM enrollments WHERE course_id = $1`, [id]);
+
+      // 8. حذف الكورس نفسه
+      await client.query(`DELETE FROM courses WHERE id = $1`, [id]);
+
+      await client.query("COMMIT");
       return true;
-    } catch (error) {
-      throw error;
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
     }
   },
-
   async updateStatus(id, status, feedback = null) {
     try {
       const { rows } = await pool.query(

@@ -62,7 +62,25 @@ const ModuleController = {
       next(error);
     }
   },
+  async getModuleById(req, res, next) {
+    try {
+      const module = await ModuleModel.findById(req.params.id);
 
+      if (!module) {
+        return res.status(404).json({
+          success: false,
+          message: "Module not found",
+        });
+      }
+
+      res.json({
+        success: true,
+        data: module,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
   async updateModule(req, res, next) {
     try {
       const { error, value } = updateModuleSchema.validate(req.body);

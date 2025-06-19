@@ -29,7 +29,6 @@ export default {
       throw error;
     }
   },
-
   /**
    * Get enrollment by ID
    */
