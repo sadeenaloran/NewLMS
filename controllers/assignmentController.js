@@ -204,6 +204,45 @@ const AssignmentController = {
       next(error);
     }
   },
+  getInstructorAssignments: async (req, res, next) => {
+    try {
+      const instructorId = req.user.id;
+
+      // ✅ 1. Get all instructor's courses
+      const courses = await CourseModel.findByInstructor(instructorId);
+
+      // ✅ 2. Build nested structure with modules and lessons
+      const allLessons = await Promise.all(
+        courses.map(async (course) => {
+          const modules = await ModuleModel.findByCourseId(course.id);
+          const lessons = await Promise.all(
+            modules.map((module) => LessonModel.findByModuleId(module.id))
+          );
+          return lessons.flat();
+        })
+      );
+
+      // ✅ 3. Flatten all lessons into one array
+      const lessonIds = allLessons.flat().map((lesson) => lesson.id);
+
+      if (lessonIds.length === 0) {
+        return res.json({ success: true, data: [] });
+      }
+
+      // ✅ 4. Get assignments related to those lessons
+      const assignments = await AssignmentModel.findDetailedByLessonIds(
+        lessonIds
+      );
+
+      res.json({
+        success: true,
+        data: assignments,
+      });
+    } catch (error) {
+      console.error("Error in getInstructorAssignments:", error);
+      next(error); // مرره للـ error middleware
+    }
+  },
 };
 
 export default AssignmentController;
