@@ -2,6 +2,8 @@ import AssignmentModel from "../models/Assignment.js";
 import LessonModel from "../models/Lesson.js";
 import ModuleModel from "../models/Module.js";
 import CourseModel from "../models/Course.js";
+import { pool } from "../config/db.js"; // Import the pool
+
 import { getCourseFromAssignment } from "../utils/helpers.js";
 import {
   assignmentCreateSchema,
@@ -241,6 +243,53 @@ const AssignmentController = {
     } catch (error) {
       console.error("Error in getInstructorAssignments:", error);
       next(error); // مرره للـ error middleware
+    }
+  },
+  async getAssignmentsByCourse(req, res, next) {
+    try {
+      const { courseId } = req.params;
+      const userId = req.user.id;
+      const userRole = req.user.role;
+
+      // Verify course exists
+      const course = await CourseModel.findById(courseId);
+      if (!course) {
+        return res.status(404).json({
+          success: false,
+          message: "Course not found",
+        });
+      }
+
+      // Authorization checks
+      if (userRole === "student") {
+        const { rows } = await pool.query(
+          `SELECT id FROM enrollments 
+           WHERE user_id = $1 AND course_id = $2`,
+          [userId, courseId]
+        );
+        if (rows.length === 0) {
+          return res.status(403).json({
+            success: false,
+            message: "You are not enrolled in this course",
+          });
+        }
+      } else if (userRole === "instructor" && course.instructor_id !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not the instructor of this course",
+        });
+      }
+
+      // Get assignments
+      const assignments = await AssignmentModel.findByCourseId(courseId);
+
+      res.json({
+        success: true,
+        data: assignments,
+      });
+    } catch (error) {
+      console.error("Error in getAssignmentsByCourse:", error);
+      next(error);
     }
   },
 };

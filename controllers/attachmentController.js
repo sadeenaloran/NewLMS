@@ -28,7 +28,7 @@ export const uploadFile = async (req, res) => {
 
     const { error: cloudinaryError } =
       cloudinaryResponseSchema.validate(result);
-    if (!result.public_id || !result.secure_url || !result.format) {
+    if (!result.public_id || !result.secure_url) {
       return res
         .status(500)
         .json({ message: "Cloudinary response missing fields", result });
@@ -40,7 +40,7 @@ export const uploadFile = async (req, res) => {
       size: req.file.size,
       public_id: result.public_id,
       secure_url: result.secure_url,
-      format: result.format, // صححت هنا
+      format: result.format || null, // صححت هنا
     };
 
     const { error: dtoError } = attachmentDTOSchema.validate(attachmentDTO);

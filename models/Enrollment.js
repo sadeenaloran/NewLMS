@@ -216,20 +216,16 @@ export default {
         for (const lesson of lessons.rows) {
           lesson.quizzes = (
             await pool.query(
-              `SELECT q.*, 
-             EXISTS(
-               SELECT 1 FROM quiz_submissions qs
-               WHERE qs.user_id = $1 AND qs.quiz_id = q.id
-             ) as is_completed,
-             COALESCE(
-               (SELECT qs.total_score FROM quiz_submissions qs
-                WHERE qs.user_id = $1 AND qs.quiz_id = q.id), 0
-             ) as score
-             FROM quizzes q
-             WHERE q.lesson_id = $2`,
-              [userId, lesson.id]
+              `SELECT q.*
+     FROM quizzes q
+     WHERE q.lesson_id = $1`,
+              [lesson.id]
             )
-          ).rows;
+          ).rows.map((q) => ({
+            ...q,
+            is_completed: false,
+            score: 0,
+          }));
 
           // Get assignments for each lesson
           lesson.assignments = (
@@ -254,9 +250,13 @@ export default {
       }
 
       return {
-        enrollment,
-        courseStructure: modules.rows,
-        progress: enrollment.progress,
+        enrollmentId: enrollment.id,
+        modules: modules.rows,
+        overallProgress: enrollment.progress,
+        completedLessons: await this.getCompletedLessons(
+          userId,
+          enrollment.course_id
+        ),
       };
     } catch (error) {
       throw error;
@@ -283,15 +283,12 @@ export default {
       // Quiz stats
       const quizStats = await pool.query(
         `SELECT 
-           COUNT(q.id) as total_quizzes,
-           COUNT(qs.quiz_id) as completed_quizzes,
-           ROUND(AVG(qs.total_score), 2) as avg_quiz_score
-         FROM quizzes q
-         JOIN lessons l ON q.lesson_id = l.id
-         JOIN modules m ON l.module_id = m.id
-         LEFT JOIN quiz_submissions qs ON qs.quiz_id = q.id AND qs.user_id = $1
-         WHERE m.course_id = $2`,
-        [userId, courseId]
+     COUNT(q.id) as total_quizzes
+   FROM quizzes q
+   JOIN lessons l ON q.lesson_id = l.id
+   JOIN modules m ON l.module_id = m.id
+   WHERE m.course_id = $1`,
+        [courseId]
       );
 
       // Assignment stats
