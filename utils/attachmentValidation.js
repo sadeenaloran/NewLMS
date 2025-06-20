@@ -34,5 +34,5 @@ export const attachmentDTOSchema = Joi.object({
   size: Joi.number().required(),
   public_id: Joi.string().required(),
   secure_url: Joi.string().uri().required(),
-  format: Joi.string().required(),
+  format: Joi.string().allow(null, "").optional(), // ✅ هذا هو التعديل المهم
 });

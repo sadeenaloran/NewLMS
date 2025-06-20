@@ -136,10 +136,7 @@ export default {
         userId
       );
 
-      res.status(200).json({
-        success: true,
-        progressDetails,
-      });
+      res.status(200).json(progressDetails);
     } catch (error) {
       res.status(400).json({
         success: false,

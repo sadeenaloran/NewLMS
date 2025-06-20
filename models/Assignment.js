@@ -97,6 +97,30 @@ const AssignmentModel = {
     const { rows } = await pool.query(query, lessonIds);
     return rows;
   },
+  async findByCourseId(courseId) {
+    const query = `
+      SELECT 
+        a.id, 
+        a.title, 
+        a.description, 
+        a.max_score,
+        a.created_at,
+        a.updated_at,
+        l.id as lesson_id,
+        l.title as lesson_title,
+        l."order" as lesson_order,
+        m.id as module_id,
+        m.title as module_title,
+        m."order" as module_order
+      FROM assignments a
+      JOIN lessons l ON a.lesson_id = l.id
+      JOIN modules m ON l.module_id = m.id
+      WHERE m.course_id = $1
+      ORDER BY m."order", l."order", a.created_at
+    `;
+    const { rows } = await pool.query(query, [courseId]);
+    return rows;
+  },
 };
 
 export default AssignmentModel;

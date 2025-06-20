@@ -9,7 +9,6 @@ router.use(authenticate);
 
 // Student routes
 router.post("/", authorize(["student"]), SubmissionController.submitAssignment);
-
 // Shared routes
 router.get("/:id", SubmissionController.getSubmission);
 router.get(

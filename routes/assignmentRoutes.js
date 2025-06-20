@@ -36,5 +36,11 @@ router.delete(
   authorize(["instructor", "admin"]),
   AssignmentController.deleteAssignment
 );
+router.get(
+  "/course/:courseId",
+  authenticate,
+  authorize(["student", "instructor", "admin"]),
+  AssignmentController.getAssignmentsByCourse
+);
 
 export default router;
